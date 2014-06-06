@@ -1,0 +1,6 @@
+.DS_Store
+.cabal*
+cabal*
+dist/*
+src/*.o
+src/*.hi
