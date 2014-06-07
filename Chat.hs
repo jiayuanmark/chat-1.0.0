@@ -49,19 +49,19 @@ serverLoop s chan user = do
 -- | Serve request.
 serveRequest :: Handle -> TChan Message -> UserName -> IO ()
 serveRequest hdl chan user = do
-  T.hPutStrLn hdl $ joinMsg user
-  broadcast $ joinMsg user
+  T.hPutStrLn hdl $ joinMsg
+  broadcast $ joinMsg
   ch <- atomically $ dupTChan chan
   void $ forkIO $ reader ch
   writer
   where
     broadcast msg' = atomically $ writeTChan chan (user, msg')
 
-    joinMsg user' = T.pack $ show user' ++ " has joined"
+    joinMsg = T.pack $ show user ++ " has joined"
 
-    leftMsg user' = T.pack $ show user' ++ " has left"
+    leftMsg = T.pack $ show user ++ " has left"
 
-    chatMsg user' msg' = T.pack $ show user' ++ ": " ++ msg'
+    chatMsg msg' = T.pack $ show user ++ ": " ++ msg'
 
     reader chan' = do
       (usr, line) <- atomically $ readTChan chan'
@@ -72,10 +72,10 @@ serveRequest hdl chan user = do
 
     writer = do
       line <- hGetLine hdl
-      broadcast $ chatMsg user line
+      broadcast $ chatMsg line
       writer
       `catch`
-      ((\_-> broadcast (leftMsg user) >> hClose hdl) :: SomeException -> IO ())
+      ((\_-> broadcast leftMsg >> hClose hdl) :: SomeException -> IO ())
 
 
 
